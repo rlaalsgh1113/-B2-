@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>실시간 시세표 - 동네지도</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        :root {
+            --primary: #3182F6;
+            --primary-bg: #E8F3FF;
+            --bg: #F2F4F6;
+            --text-main: #191F28;
+            --text-sub: #4E5968;
+            --text-grey: #8B95A1;
+            --border: #E5E8EB;
+            --glass: rgba(255, 255, 255, 0.7);
+            --blur: saturate(180%) blur(12px);
+            --skeleton: #E5E8EB;
+            --accent-red: #F04452;
+        }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg); background-image: radial-gradient(at 10% 10%, rgba(49, 130, 246, 0.1) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(255, 107, 107, 0.08) 0px, transparent 50%); background-attachment: fixed; color: var(--text-main); padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
+        .header { background: var(--glass); backdrop-filter: var(--blur); padding: 16px 20px; font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 100; font-size: 20px; }
+        .filter-section { background: rgba(242, 244, 246, 0.7); backdrop-filter: var(--blur); padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); position: sticky; top: 57px; z-index: 90; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .avg-price-info { margin: 12px 16px 4px 16px; padding: 14px 18px; background: var(--glass); backdrop-filter: var(--blur); border-radius: 18px; display: none; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--text-sub); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 4px 12px rgba(0,0,0,0.02); animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .dropdown { position: relative; }
+        .dropdown-btn { width: 100%; background: var(--glass); border: 1px solid rgba(0,0,0,0.03); padding: 12px 14px; border-radius: 14px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 13px; box-sizing: border-box; color: var(--text-sub); }
+        .dropdown-menu { position: absolute; top: 52px; left: 0; right: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 18px; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.15); z-index: 110; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item { padding: 15px 18px; border-bottom: 1px solid rgba(0,0,0,0.03); cursor: pointer; font-size: 14px; }
+        .dropdown-item:hover { background: var(--primary-bg); color: var(--primary); }
+        .list-container { padding: 16px; display: flex; flex-direction: column; gap: 12px; min-height: 200px; }
+        .price-card { background: #fff; border-radius: 24px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); cursor: pointer; border: 1px solid rgba(0,0,0,0.02); transition: all 0.2s ease; }
+        .price-value { font-size: 22px; font-weight: 800; color: var(--primary); }
+        .condition-summary { font-size: 13px; margin-bottom: 16px; display: flex; gap: 4px; font-weight: 600; align-items: center; }
+        .text-blue { color: var(--primary); }
+        .text-red { color: var(--accent-red); }
+        .skeleton-card { background: #fff; border-radius: 24px; padding: 24px; height: 160px; box-sizing: border-box; margin-bottom: 12px; }
+        .skeleton-box { background: var(--skeleton); border-radius: 10px; position: relative; overflow: hidden; height: 20px; margin-bottom: 10px; }
+        .skeleton-box::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); animation: skeleton-shimmer 1.5s infinite; }
+        @keyframes skeleton-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(8px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(25px); width: 92%; max-width: 420px; border-radius: 32px; padding: 24px; box-sizing: border-box; overflow-y: auto; max-height: 90vh; }
+
+        .map-box { width: 100%; height: 180px; background-color: #E8EAED; border-radius: 20px; margin-bottom: 16px; overflow: hidden; position: relative; border: 1px solid rgba(0,0,0,0.05); }
+        .map-box iframe { width: 100%; height: 100%; border: none; }
+        
+        .modal-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-action { padding: 16px; border: none; border-radius: 18px; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; }
+        .btn-chat { background: var(--primary); color: #fff; }
+        .btn-call { background: var(--primary-bg); color: var(--primary); }
+
+        .bottom-nav { display: flex; background: var(--glass); backdrop-filter: blur(20px); height: 75px; position: fixed; bottom: 0; width: 100%; z-index: 100; border-top: 1px solid rgba(0,0,0,0.04); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-grey); text-decoration: none; font-size: 11px; }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+        .term-tag { font-size: 11px; padding: 3px 8px; border-radius: 8px; font-weight: 600; margin-left: 6px; border: 1px solid transparent; }
+        .tag-blue { color: var(--primary); border-color: var(--primary-bg); }
+        .tag-red { color: var(--accent-red); border-color: #FEECEF; }
+        .tag-green { color: #1FB749; border-color: #E7F9ED; }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">실시간 시세표</div>
+    <div class="filter-section">
+        <div class="dropdown"><button class="dropdown-btn" id="brandBtn"><span id="brandText">제조사 (전체)</span><span>▼</span></button>
+            <div class="dropdown-menu" id="brandMenu"><div class="dropdown-item b-opt" data-value="전체">제조사 (전체)</div><div class="dropdown-item b-opt" data-value="iPhone">iPhone</div><div class="dropdown-item b-opt" data-value="Galaxy">Galaxy</div></div>
+        </div>
+        <div class="dropdown"><button class="dropdown-btn" id="modelBtn"><span id="modelText">모델명 (전체)</span><span>▼</span></button>
+            <div class="dropdown-menu" id="modelMenu"><div class="dropdown-item m-opt" data-value="전체">모델명 (전체)</div></div>
+        </div>
+        <div class="dropdown"><button class="dropdown-btn" id="fromTeleBtn"><span id="fromTeleText">내: SKT</span><span>▼</span></button>
+            <div class="dropdown-menu" id="fromTeleMenu"><div class="dropdown-item ft-opt" data-value="SKT">SKT</div><div class="dropdown-item ft-opt" data-value="KT">KT</div><div class="dropdown-item ft-opt" data-value="LG">LG</div></div>
+        </div>
+        <div class="dropdown"><button class="dropdown-btn" id="toTeleBtn"><span id="toTeleText">변경: LG</span><span>▼</span></button>
+            <div class="dropdown-menu" id="toTeleMenu"><div class="dropdown-item tt-opt" data-value="SKT">SKT</div><div class="dropdown-item tt-opt" data-value="KT">KT</div><div class="dropdown-item tt-opt" data-value="LG">LG</div></div>
+        </div>
+        <div class="dropdown" style="grid-column: span 2;"><button class="dropdown-btn" id="sortBtn"><span id="curSort">추천순 정렬</span><span>▼</span></button>
+            <div class="dropdown-menu" id="sortMenu"><div class="dropdown-item s-opt" data-value="추천순">추천순</div><div class="dropdown-item s-opt" data-value="가까운 순">가까운 순</div><div class="dropdown-item s-opt" data-value="가격 낮은 순">가격 낮은 순</div></div>
+        </div>
+    </div>
+    <div class="avg-price-info" id="avgPriceBar"><span id="avgLabel">모델 평균 시세</span><span style="color:var(--primary); font-weight:800;" id="avgValue">0원</span></div>
+    
+    <div id="listContainer" class="list-container"></div>
+    <div id="sentinel" style="height: 50px; background: transparent;"></div>
+    
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+                <div><b id="mStore" style="font-size:22px; color:var(--text-main); display:block; margin-bottom:4px;"></b><span id="mAddress" style="font-size:13px; color:var(--text-grey); font-weight:500;"></span></div>
+                <span onclick="closeModal()" style="font-size:28px; color:var(--text-grey); cursor:pointer; line-height: 1;">&times;</span>
+            </div>
+            
+            <div class="map-box" id="mMapContainer">
+                </div>
+
+            <div style="background-color: rgba(249, 250, 251, 0.8); padding: 20px; border-radius: 22px; margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.02);">
+                <div style="border-top: 1px solid var(--border); padding-top: 10px; display:flex; justify-content:space-between; align-items: center;"><span style="font-size:15px; font-weight: 700;">기기 최종가</span><b style="font-size:24px; color:var(--primary);"><span id="mPrice">0</span>원</b></div>
+            </div>
+            <div id="conditionContainer" style="padding: 20px; border-radius: 22px; margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.02); background: rgba(249, 250, 251, 0.8);"></div>
+            
+            <div class="modal-btn-group">
+                <button class="btn-action btn-chat" onclick="closeModal()">1:1 문의하기</button>
+                <button class="btn-action btn-call" onclick="closeModal()">전화 연결</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="list.html" class="nav-item active">📊<div>비교</div></a>
+        <a href="map.html" class="nav-item">🗺️<div>지도</div></a>
+        <a href="community.html" class="nav-item">💬<div>톡</div></a>
+        <a href="profile.html" class="nav-item">👤<div>MY</div></a>
+    </div>
+
+    <script>
+        const storeData = [];
+        const brandModels = {
+            "iPhone": ["16 Pro", "16 Plus", "16", "15 Pro", "15 Plus", "15"],
+            "Galaxy": ["S26 Ultra", "S26+", "S26", "S25 Ultra", "S25+", "S25", "S24 Ultra", "S24+", "S24"]
+        };
+        const modelAvgPrices = {
+            "16 Pro": 550000, "16 Plus": 420000, "16": 320000, "15 Pro": 380000, "15 Plus": 280000, "15": 210000,
+            "S26 Ultra": 620000, "S26+": 480000, "S26": 350000, "S25 Ultra": 450000, "S25+": 320000, "S25": 240000, "S24 Ultra": 310000, "S24+": 210000, "S24": 150000
+        };
+        const stores = ["우철네 대리점", "성지 모바일", "대가대 통신", "반월당 성지", "수성 모바일", "동성로 폰샵"];
+        const addresses = ["대구광역시 중구 동성로 12길", "대구광역시 수성구 달구벌대로", "대구광역시 북구 대학로 80", "대구광역시 중구 달구벌대로 2100", "대구광역시 수성구 범어동", "대구광역시 중구 동성로3가"];
+
+        let curPage = 0; const perPage = 10; 
+        let isFetching = false;
+        let curBrand = '전체', curModel = '전체', curFromTele = 'SKT', curToTele = 'LG', curSort = '추천순';
+
+        function initData() {
+            const brands = Object.keys(brandModels);
+            brands.forEach(brand => {
+                brandModels[brand].forEach(model => {
+                    for(let k=1; k<=20; k++) {
+                        const storeIdx = Math.floor(Math.random() * 6);
+                        storeData.push({
+                            id: storeData.length + 1,
+                            name: `${stores[storeIdx]} ${k}호점`,
+                            address: addresses[storeIdx],
+                            brand: brand,
+                            model: model,
+                            deviceName: `${brand} ${model}`,
+                            ins: (k % 3 === 0) ? 0 : 3,
+                            isPlanFree: (k % 4 === 0),
+                            distance: parseFloat((Math.random() * 15).toFixed(1)),
+                            diff: Math.floor(Math.random() * 40000) - 20000
+                        });
+                    }
+                });
+            });
+        }
+
+        function calculatePrice(item, from, to) {
+            let base = item.brand === "iPhone" ? 450000 : 300000;
+            if (from === to) base += 130000;
+            if (item.ins === 0) base += 45000;
+            if (item.isPlanFree) base += 180000; 
+            return base + (item.id * 10);
+        }
+
+        function renderItems() {
+            if (isFetching) return;
+            isFetching = true;
+            const container = document.getElementById('listContainer');
+            setTimeout(() => {
+                let filtered = storeData.filter(item => {
+                    const mBrand = (curBrand === '전체' || item.brand === curBrand);
+                    const mModel = (curModel === '전체' || item.model === curModel);
+                    return mBrand && mModel;
+                });
+                filtered.forEach(item => { item.tempPrice = calculatePrice(item, curFromTele, curToTele); });
+                if (curSort === '가까운 순') filtered.sort((a, b) => a.distance - b.distance);
+                else if (curSort === '가격 낮은 순') filtered.sort((a, b) => a.tempPrice - b.tempPrice);
+                const startIdx = curPage * perPage;
+                const items = filtered.slice(startIdx, startIdx + perPage);
+                items.forEach(item => {
+                    const card = document.createElement('div'); card.className = 'price-card';
+                    const insHtml = item.ins === 0 ? `<span class="text-blue">보험 없음</span>` : `<span class="text-blue">보험 ${item.ins}달</span>`;
+                    const planHtml = item.isPlanFree ? `<span class="text-blue">요금제 자유</span>` : `<span class="text-red">109 요금제 (6달)</span>`;
+                    card.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><b style="font-size:17px;">${item.name}</b><span style="font-size:13px; color:var(--primary); font-weight:700;">${item.distance}km</span></div><div style="font-size:13px; color:var(--text-grey); margin-bottom:12px;">${item.address}</div><div class="condition-summary">${insHtml} / ${planHtml}</div><div style="display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid rgba(0,0,0,0.02); padding-top:16px;"><span style="font-size:14px; color:var(--text-sub);">${item.deviceName}</span><span class="price-value">${item.tempPrice.toLocaleString()}원</span></div>`;
+                    card.onclick = () => openModal(item);
+                    container.appendChild(card);
+                });
+                curPage++; isFetching = false;
+            }, 100);
+        }
+
+        const observer = new IntersectionObserver((entries) => { if (entries[0].isIntersecting && !isFetching) renderItems(); });
+        observer.observe(document.getElementById('sentinel'));
+
+        function resetAndRender() { document.getElementById('listContainer').innerHTML = ""; curPage = 0; isFetching = false; renderItems(); }
+
+        function updateModelDropdown(brand) {
+            const menu = document.getElementById('modelMenu'); const text = document.getElementById('modelText');
+            menu.innerHTML = '<div class="dropdown-item m-opt" data-value="전체">모델명 (전체)</div>';
+            curModel = '전체'; text.innerText = '모델명 (전체)';
+            document.getElementById('avgPriceBar').style.display = 'none';
+            if (brand !== '전체') {
+                brandModels[brand].forEach(m => {
+                    const div = document.createElement('div'); div.className = 'dropdown-item m-opt'; div.innerText = m;
+                    div.onclick = (e) => { e.stopPropagation(); curModel = m; text.innerText = m; menu.classList.remove('show'); showAvgPrice(brand, m); resetAndRender(); };
+                    menu.appendChild(div);
+                });
+            }
+            resetAndRender();
+        }
+
+        function showAvgPrice(brand, model) {
+            const bar = document.getElementById('avgPriceBar');
+            if (model === '전체' || !modelAvgPrices[model]) { bar.style.display = 'none'; return; }
+            bar.style.display = 'flex';
+            document.getElementById('avgLabel').innerText = `${brand} ${model} 평균 시세`;
+            document.getElementById('avgValue').innerText = `${modelAvgPrices[model].toLocaleString()}원`;
+        }
+
+        function setupDropdown(btnId, menuId, displayId, optClass, callback, prefix="") {
+            const btn = document.getElementById(btnId), menu = document.getElementById(menuId);
+            btn.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => m !== menu && m.classList.remove('show')); menu.classList.toggle('show'); };
+            document.querySelectorAll('.'+optClass).forEach(opt => opt.onclick = () => {
+                const val = opt.getAttribute('data-value'); document.getElementById(displayId).innerText = prefix + val;
+                menu.classList.remove('show'); callback(val);
+            });
+        }
+
+        setupDropdown('brandBtn', 'brandMenu', 'brandText', 'b-opt', (v) => { curBrand = v; updateModelDropdown(v); });
+        document.getElementById('modelBtn').onclick = (e) => { e.stopPropagation(); document.getElementById('modelMenu').classList.toggle('show'); };
+        setupDropdown('fromTeleBtn', 'fromTeleMenu', 'fromTeleText', 'ft-opt', (v) => { curFromTele = v; resetAndRender(); }, "내: ");
+        setupDropdown('toTeleBtn', 'toTeleMenu', 'toTeleText', 'tt-opt', (v) => { curToTele = v; resetAndRender(); }, "변경: ");
+        setupDropdown('sortBtn', 'sortMenu', 'curSort', 's-opt', (v) => { curSort = v; resetAndRender(); });
+
+        function openModal(item) {
+            document.getElementById('mStore').innerText = item.name; 
+            document.getElementById('mAddress').innerText = item.address;
+
+            const mapContainer = document.getElementById('mMapContainer');
+            const encodedAddress = encodeURIComponent(item.address);
+            mapContainer.innerHTML = `<iframe src="https://maps.google.com/maps?q=${encodedAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed"></iframe>`;
+
+            document.getElementById('modalOverlay').classList.add('active');
+            const obj = document.getElementById('mPrice');
+            let start = performance.now();
+            function update(t) {
+                let p = Math.min((t - start) / 500, 1); obj.innerText = Math.floor((1-Math.pow(1-p,3))*item.tempPrice).toLocaleString();
+                if(p<1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+            
+            const cond = document.getElementById('conditionContainer');
+            const planDetail = item.isPlanFree ? '자유 요금제' : '109,000원 * 6개월';
+            const insDetail = item.ins === 0 ? '없음' : `4,500원 * ${item.ins}개월`;
+            
+            cond.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span style="font-size:14px; font-weight:600;">📶 요금제 유지</span>
+                    <span class="term-tag ${item.isPlanFree ? 'tag-green' : 'tag-red'}">${planDetail}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:14px; font-weight:600;">🛡️ 파손 보험</span>
+                    <span class="term-tag tag-blue">${insDetail}</span>
+                </div>
+            `;
+        }
+
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+        window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        window.onload = () => { initData(); renderItems(); };
+    </script>
+</body>
+</html>

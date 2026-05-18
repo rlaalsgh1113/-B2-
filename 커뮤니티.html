@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>커뮤니티</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        :root {
+            --primary: #3182F6;
+            --primary-bg: #E8F3FF;
+            --bg: #F2F4F6;
+            --text-main: #191F28;
+            --text-sub: #4E5968;
+            --text-grey: #8B95A1;
+            --border: #E5E8EB;
+            --white: #ffffff;
+            --accent-red: #F04452;
+        }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg); color: var(--text-main); padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
+        .header { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); padding: 16px 20px; font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.04); position: sticky; top: 0; z-index: 100; font-size: 20px; }
+        
+        .best-label { padding: 16px 20px 0 20px; font-size: 14px; font-weight: 800; color: var(--text-main); }
+        .best-section { padding: 12px 16px 20px 16px; overflow-x: auto; display: flex; gap: 12px; scrollbar-width: none; }
+        .best-section::-webkit-scrollbar { display: none; }
+        .best-card { min-width: 260px; background: var(--white); padding: 20px; border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
+        .best-tag { color: var(--primary); font-size: 11px; font-weight: 800; margin-bottom: 8px; display: block; }
+        .best-title { font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .filter-area { display: flex; align-items: center; padding: 0 16px 12px 16px; gap: 10px; }
+        
+        .sort-container { background: #E5E8EB; padding: 4px; border-radius: 10px; display: flex; gap: 2px; flex-shrink: 0; }
+        .sort-btn { border: none; background: none; padding: 7px 12px; font-size: 12px; font-weight: 700; color: var(--text-grey); cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+        .sort-btn.active { background: var(--white); color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .category-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .cat-btn { border: none; background: #E5E8EB; padding: 8px 14px; font-size: 13px; font-weight: 700; color: var(--text-sub); border-radius: 10px; white-space: nowrap; cursor: pointer; }
+        .cat-btn.active { background: var(--text-main); color: #fff; }
+
+        .post-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+        .post-card { background: var(--white); padding: 20px; border-radius: 22px; }
+        .post-category { font-size: 12px; color: var(--primary); font-weight: 700; margin-bottom: 6px; }
+        .post-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .post-desc { font-size: 14px; color: var(--text-sub); line-height: 1.5; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .post-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid #F9FAFB; }
+        .post-info { display: flex; gap: 14px; font-size: 13px; font-weight: 600; }
+        .info-item { display: flex; align-items: center; gap: 4px; color: var(--text-grey); }
+        .info-item.liked { color: var(--accent-red); }
+        .post-time { font-size: 12px; color: var(--text-grey); }
+
+        .bottom-nav { display: flex; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); height: 75px; position: fixed; bottom: 0; width: 100%; z-index: 100; border-top: 1px solid rgba(0,0,0,0.04); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-grey); text-decoration: none; font-size: 11px; }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+        .write-btn { position: fixed; bottom: 95px; right: 20px; background: var(--primary); color: white; width: 56px; height: 56px; border-radius: 28px; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3); z-index: 99; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">커뮤니티</div>
+
+    <div class="best-label">실시간 BEST 🔥</div>
+    <div class="best-section" id="bestPosts"></div>
+
+    <div class="filter-area">
+        <div class="sort-container">
+            <button class="sort-btn active" onclick="setSort('recommend', this)">추천순</button>
+            <button class="sort-btn" onclick="setSort('recent', this)">최근순</button>
+        </div>
+        <div class="category-scroll">
+            <button class="cat-btn active" onclick="setCategory('전체', this)">전체</button>
+            <button class="cat-btn" onclick="setCategory('구매후기', this)">구매후기</button>
+            <button class="cat-btn" onclick="setCategory('질문/답변', this)">질문/답변</button>
+            <button class="cat-btn" onclick="setCategory('정보공유', this)">정보공유</button>
+        </div>
+    </div>
+
+    <div class="post-list" id="postList"></div>
+
+    <button class="write-btn">✏️</button>
+
+    <div class="bottom-nav">
+        <a href="list.html" class="nav-item">📊<div>비교</div></a>
+        <a href="map.html" class="nav-item">🗺️<div>지도</div></a>
+        <a href="community.html" class="nav-item active">💬<div>톡</div></a>
+        <a href="profile.html" class="nav-item">👤<div>MY</div></a>
+    </div>
+
+    <script>
+        const posts = [
+            { id: 1, category: "구매후기", title: "아이폰 16 Pro 실버 개통 완료!", desc: "동성로 성지 발품 팔아서 드디어 졸업했습니다. 조건 정말 좋네요.", likes: 152, comments: 24, time: "2분 전" },
+            { id: 2, category: "정보공유", title: "오늘자 하양/경산 시세표 정리", desc: "갤S24 울트라 가격이 어제보다 많이 내려갔습니다. 참고하세요.", likes: 89, comments: 42, time: "15분 전" },
+            { id: 3, category: "질문/답변", title: "알뜰폰에서 번호이동 할 때 주의점?", desc: "이번에 대리점 가서 바꾸려는데 알뜰폰은 제약이 따로 있나요?", likes: 12, comments: 18, time: "30분 전" },
+            { id: 4, category: "정보공유", title: "성지 방문 전 필독 사항 5가지", desc: "초보분들이 가장 많이 실수하는 부분들 정리해봤습니다.", likes: 210, comments: 55, time: "1시간 전" },
+            { id: 5, category: "구매후기", title: "부모님 폰 갤럭시 A35로 바꿔드렸어요", desc: "효도폰으로 가성비 최고인듯 합니다. 상담도 친절하게 잘 받았네요.", likes: 45, comments: 7, time: "2시간 전" },
+            { id: 6, category: "질문/답변", title: "공시지원금이랑 선택약정 중 뭐가 유리할까요?", desc: "지금 요금제 10만원짜리 쓰려고 하는데 계산이 잘 안되네요.", likes: 8, comments: 31, time: "3시간 전" }
+        ];
+
+        let currentSort = 'recommend';
+        let currentCategory = '전체';
+
+        function render() {
+            const bestList = [...posts].sort((a, b) => b.likes - a.likes).slice(0, 3);
+            document.getElementById('bestPosts').innerHTML = bestList.map(p => `
+                <div class="best-card">
+                    <span class="best-tag">BEST</span>
+                    <div class="best-title">${p.title}</div>
+                    <div style="display:flex; gap:10px; font-size:12px; font-weight:700; color:var(--text-grey);">
+                        <span>❤️ ${p.likes}</span>
+                        <span>💬 ${p.comments}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            let displayPosts = [...posts];
+            if (currentCategory !== '전체') {
+                displayPosts = displayPosts.filter(p => p.category === currentCategory);
+            }
+
+            if (currentSort === 'recommend') displayPosts.sort((a, b) => b.likes - a.likes);
+            else displayPosts.sort((a, b) => b.id - a.id);
+
+            const listEl = document.getElementById('postList');
+            if (displayPosts.length === 0) {
+                listEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-grey); font-size:14px;">게시글이 없습니다.</div>`;
+            } else {
+                listEl.innerHTML = displayPosts.map(p => `
+                    <div class="post-card">
+                        <div class="post-category">${p.category}</div>
+                        <div class="post-title">${p.title}</div>
+                        <div class="post-desc">${p.desc}</div>
+                        <div class="post-footer">
+                            <div class="post-info">
+                                <div class="info-item liked">❤️ ${p.likes}</div>
+                                <div class="info-item">💬 ${p.comments}</div>
+                            </div>
+                            <div class="post-time">${p.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function setSort(type, btn) {
+            currentSort = type;
+            document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        }
+
+        function setCategory(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>

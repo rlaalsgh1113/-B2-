@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>마이페이지</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        :root {
+            --primary: #3182F6;
+            --primary-bg: #E8F3FF;
+            --bg: #F2F4F6;
+            --text-main: #191F28;
+            --text-sub: #4E5968;
+            --text-grey: #8B95A1;
+            --border: #E5E8EB;
+            --white: #ffffff;
+            --orange: #FF6F0F;
+        }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--white); color: var(--text-main); padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
+        
+        .header { padding: 16px 20px; font-weight: 800; font-size: 20px; position: sticky; top: 0; background: #fff; z-index: 10; }
+
+        .profile-area { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .profile-info { display: flex; align-items: center; gap: 16px; }
+        .profile-img { width: 64px; height: 64px; background: #f0f0f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; border: 1px solid var(--border); }
+        .nickname { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+        .address { font-size: 13px; color: var(--text-grey); }
+        .profile-edit-btn { border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-sub); cursor: pointer; }
+
+        .activity-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 20px 0; border-bottom: 8px solid var(--bg); }
+        .stat-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+        .stat-icon { font-size: 24px; }
+        .stat-label { font-size: 13px; font-weight: 600; color: var(--text-sub); }
+
+        .menu-group { border-bottom: 8px solid var(--bg); }
+        .menu-title { padding: 20px 20px 10px 20px; font-size: 16px; font-weight: 800; }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; cursor: pointer; transition: background 0.1s; }
+        .menu-item:active { background: #f9f9f9; }
+        .menu-left { display: flex; align-items: center; gap: 12px; }
+        .menu-icon { font-size: 20px; width: 24px; text-align: center; }
+        .menu-label { font-size: 15px; font-weight: 500; color: var(--text-main); }
+        .arrow { color: var(--border); font-size: 18px; }
+
+        .bottom-nav { display: flex; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); height: 75px; position: fixed; bottom: 0; width: 100%; z-index: 100; border-top: 1px solid rgba(0,0,0,0.04); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-grey); text-decoration: none; font-size: 11px; }
+        .nav-item.active { color: var(--text-main); font-weight: 800; }
+        .nav-item.active div { color: var(--text-main); }
+    </style>
+</head>
+<body>
+
+    <div class="header">나의 정보</div>
+
+    <div class="profile-area">
+        <div class="profile-info">
+            <div class="profile-img">👤</div>
+            <div>
+                <div class="nickname">차우철 <span style="font-weight: 400; font-size: 14px; color: var(--text-grey);">#1024</span></div>
+                <div class="address">대구광역시 북구 대학로</div>
+            </div>
+        </div>
+        <div class="profile-edit-btn">프로필 수정</div>
+    </div>
+
+    <div class="activity-stats">
+        <div class="stat-item">
+            <div class="stat-icon">📄</div>
+            <div class="stat-label">상담 내역</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon">🧡</div>
+            <div class="stat-label">관심 매장</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon">📝</div>
+            <div class="stat-label">작성 후기</div>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-title">나의 대리점 거래</div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">📱</div>
+                <div class="menu-label">내 기기 시세 조회</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">📅</div>
+                <div class="menu-label">방문 예약 현황</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">🎁</div>
+                <div class="menu-label">보유 쿠폰함</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-title">나의 커뮤니티</div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">✍️</div>
+                <div class="menu-label">내가 쓴 글/댓글</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">🔔</div>
+                <div class="menu-label">키워드 알림 설정</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+    </div>
+
+    <div class="menu-group" style="border-bottom: none;">
+        <div class="menu-title">기타</div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">📢</div>
+                <div class="menu-label">공지사항</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">🎧</div>
+                <div class="menu-label">고객센터 / 1:1 문의</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+        <div class="menu-item">
+            <div class="menu-left">
+                <div class="menu-icon">⚙️</div>
+                <div class="menu-label">앱 설정</div>
+            </div>
+            <div class="arrow">›</div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="list.html" class="nav-item">📊<div>비교</div></a>
+        <a href="map.html" class="nav-item">🗺️<div>지도</div></a>
+        <a href="community.html" class="nav-item">💬<div>톡</div></a>
+        <a href="profile.html" class="nav-item active">👤<div>MY</div></a>
+    </div>
+
+</body>
+</html>

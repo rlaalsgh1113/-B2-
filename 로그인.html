@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로그인 - 대리점 비교 시스템</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-container { width: 100%; max-width: 400px; padding: 20px; }
+        .title { font-size: 24px; font-weight: 700; color: #191F28; margin-bottom: 40px; text-align: left; line-height: 1.4; }
+        .title span { color: #3182F6; }
+
+        .input-group { margin-bottom: 12px; }
+        input { width:  100%; padding: 16px; border: 1px solid #E5E8EB; border-radius: 12px; font-size: 15px; box-sizing: border-box; background-color: #F9FAFB; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: #3182F6; background-color: #fff; }
+
+        .btn-login { width: 100%; padding: 16px; background-color: #3182F6; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; }
+        .btn-login:active { background-color: #1B64DA; }
+
+        .footer-links { margin-top: 24px; text-align: center; font-size: 14px; color: #4E5968; }
+        .footer-links a { color: #3182F6; text-decoration: none; margin: 0 10px; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="title">
+            내 주변 가장 저렴한<br>
+            <span>대리점 찾기</span> 서비스
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="userId" placeholder="아이디">
+        </div>
+        <div class="input-group">
+            <input type="password" id="userPw" placeholder="비밀번호">
+        </div>
+
+        <button class="btn-login" onclick="handleLogin()">로그인</button>
+
+        <div class="footer-links">
+            <a href="signup.html">회원가입</a>
+            <span>|</span>
+            <a href="#">아이디/비번 찾기</a>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin() {
+            const id = document.getElementById('userId').value;
+            const pw = document.getElementById('userPw').value;
+
+            if (id && pw) {
+                location.href = 'index.html';
+            } else {
+                alert('아이디와 비밀번호를 입력해주세요.');
+            }
+        }
+    </script>
+</body>
+</html>
