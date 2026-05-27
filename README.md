@@ -5,7 +5,8 @@
 
 **모행 홍보 및 기능 설명 영상**
 
-https://github.com/user-attachments/assets/d73a85a6-fa4f-4ab1-9a42-105a9ccb412b
+https://github.com/user-attachments/assets/d32ae2c1-c81e-4169-846c-e4f2d5d98933
+
 
 
 
