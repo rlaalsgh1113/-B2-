@@ -67,7 +67,30 @@ https://github.com/user-attachments/assets/d32ae2c1-c81e-4169-846c-e4f2d5d98933
 |아이디·비밀번호 입력 후 진입 (데모용)|제조사·모델·통신사 필터, 정렬, 무한 스크롤, 상세 모달|Leaflet 지도에 주변 대리점 표시, OSRM 경로 안내|구매후기/질문답변/정보공유 게시판, 추천·최근순 정렬|상담 내역·관심 매장 등 사용자 메뉴|
 </div>
 
-**[화면 설명]** - 본 저장소는 정적 리소스 단일 프로젝트로, 각 `.html` 파일이 하나의 화면에 대응합니다.
+**[화면 설명]** 
+### 1. 실시간 시세표
+| 실시간 시세표 |
+| :---: |
+| <img width="569" height="510" alt="image" src="https://github.com/user-attachments/assets/01d50799-d337-4fe5-bb6a-1409fa2de184" /> |
+- 상세 조건 필터 버튼(기기,통신사,요금제 등)
+- 내가 선택한 기종의 평균 시세
+- 대리점 추천 리스트
+
+### 2. 내 주변 대리점 지도
+| 내 주변 대리점 지도 |
+| :---: |
+| <img width="569" height="479" alt="image" src="https://github.com/user-attachments/assets/26101dc2-dfae-4eae-a1d8-3dadca6be7ba" /> |
+- 지도(Map API)및 대리점 위치 아이콘(마커)
+- 현재 위치(GPS)기반 주변 대리점 탐색 창
+- 최적 이동 경로 및 예상 소요시간 안내
+- 인앱 1:1채팅 메시지 및 전화 연결 버튼
+
+### 3. 사용자 커뮤니티
+| 사용자 커뮤니티 |
+| :---: |
+| <img width="569" height="497" alt="image" src="https://github.com/user-attachments/assets/b3f1f745-5fa3-4571-b5b4-483021bc90d2" /> |
+- 구매 팁/후기 소통 게시판
+- 실시간 BEST 게시글 탭
 
 **[API 설명]** - 별도의 백엔드 API가 없으며, 모든 데이터는 클라이언트에서 생성되는 목업 데이터입니다.
 
